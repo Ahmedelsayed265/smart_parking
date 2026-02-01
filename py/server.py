@@ -8,7 +8,7 @@ from PIL import Image
 # CONFIG
 MODEL_PATH = r"D:\smart_parking\py\best.pt"  # change if needed
 IMGSZ = 640
-CONF = 0.45  # Increased to remove low-confidence noise
+CONF = 0.25
 
 app = FastAPI(title="YOLO Inference API")
 model = YOLO(MODEL_PATH)  # load once at startup
@@ -26,8 +26,13 @@ def run_predict(pil_img: Image.Image):
     out = []
     for i in range(len(dets)):
         xyxy = dets.xyxy[i].tolist()       # [x1,y1,x2,y2]
+        conf = float(dets.conf[i].item())
+        cls  = int(dets.cls[i].item())
         out.append({
-            "x1": xyxy[0], "y1": xyxy[1], "x2": xyxy[2], "y2": xyxy[3]
+            "x1": xyxy[0], "y1": xyxy[1], "x2": xyxy[2], "y2": xyxy[3],
+            "confidence": conf,
+            "class_id": cls,
+            "class_name": CLASS_NAMES.get(cls, str(cls))
         })
     return {"detections": out}
 
