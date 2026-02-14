@@ -43,6 +43,24 @@ CREATE TABLE IF NOT EXISTS detection_logs (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Parking detection results table (stores parking_id and ONNX model output)
+CREATE TABLE IF NOT EXISTS parking_detection_results (
+  id SERIAL PRIMARY KEY,
+  parking_id INTEGER NOT NULL,
+  occupied_slots TEXT[],
+  available_slots TEXT[],
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Parking layouts table (stores parking_id and layout structure)
+CREATE TABLE IF NOT EXISTS parking_layouts (
+  id SERIAL PRIMARY KEY,
+  parking_id INTEGER NOT NULL,
+  layout JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Email verification codes
 CREATE TABLE IF NOT EXISTS email_verifications (
   code VARCHAR(6) PRIMARY KEY,
@@ -62,6 +80,24 @@ CREATE TABLE IF NOT EXISTS token_blacklist (
   id SERIAL PRIMARY KEY,
   token TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Favourite parkings table
+CREATE TABLE IF NOT EXISTS favourite_parkings (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  parking_id INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(username, parking_id)
+);
+
+-- Parking history table
+CREATE TABLE IF NOT EXISTS parking_history (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  parking_id INTEGER NOT NULL,
+  last_visited TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(username, parking_id)
 );
 
 -- Insert default parking lot
@@ -107,3 +143,12 @@ CREATE INDEX IF NOT EXISTS idx_parking_slots_lot_id ON parking_slots(parking_lot
 CREATE INDEX IF NOT EXISTS idx_parking_slots_label ON parking_slots(label);
 CREATE INDEX IF NOT EXISTS idx_detection_logs_lot_id ON detection_logs(parking_lot_id);
 CREATE INDEX IF NOT EXISTS idx_detection_logs_created_at ON detection_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_parking_detection_results_parking_id ON parking_detection_results(parking_id);
+CREATE INDEX IF NOT EXISTS idx_parking_detection_results_created_at ON parking_detection_results(created_at);
+CREATE INDEX IF NOT EXISTS idx_parking_layouts_parking_id ON parking_layouts(parking_id);
+CREATE INDEX IF NOT EXISTS idx_parking_layouts_created_at ON parking_layouts(created_at);
+CREATE INDEX IF NOT EXISTS idx_favourite_parkings_username ON favourite_parkings(username);
+CREATE INDEX IF NOT EXISTS idx_favourite_parkings_parking_id ON favourite_parkings(parking_id);
+CREATE INDEX IF NOT EXISTS idx_parking_history_username ON parking_history(username);
+CREATE INDEX IF NOT EXISTS idx_parking_history_parking_id ON parking_history(parking_id);
+CREATE INDEX IF NOT EXISTS idx_parking_history_last_visited ON parking_history(last_visited);

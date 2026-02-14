@@ -114,4 +114,72 @@ export class ParkingService {
       throw error;
     }
   }
+
+  async saveParkingDetectionResult(parkingId, occupiedSlots, availableSlots) {
+    try {
+      const query = `
+        INSERT INTO parking_detection_results (parking_id, occupied_slots, available_slots)
+        VALUES ($1, $2, $3)
+        RETURNING *
+      `;
+      const result = await pool.query(query, [
+        parkingId,
+        occupiedSlots,
+        availableSlots,
+      ]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error saving parking detection result:", error);
+      throw error;
+    }
+  }
+
+  async getLatestParkingDetectionResult(parkingId) {
+    try {
+      const query = `
+        SELECT id, parking_id, occupied_slots, available_slots, created_at
+        FROM parking_detection_results
+        WHERE parking_id = $1
+        ORDER BY created_at DESC
+        LIMIT 1
+      `;
+      const result = await pool.query(query, [parkingId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error("Error getting latest parking detection result:", error);
+      throw error;
+    }
+  }
+
+  async getParkingLayout(parkingId) {
+    try {
+      const query = `
+        SELECT id, parking_id, layout, created_at, updated_at
+        FROM parking_layouts
+        WHERE parking_id = $1
+        ORDER BY updated_at DESC, created_at DESC
+        LIMIT 1
+      `;
+      const result = await pool.query(query, [parkingId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error("Error getting parking layout:", error);
+      throw error;
+    }
+  }
+
+  async saveParkingLayout(parkingId, layout) {
+    try {
+      const query = `
+        INSERT INTO parking_layouts (parking_id, layout)
+        VALUES ($1, $2)
+        RETURNING *
+      `;
+      const result = await pool.query(query, [parkingId, layout]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error saving parking layout:", error);
+      throw error;
+    }
+  }
 }
